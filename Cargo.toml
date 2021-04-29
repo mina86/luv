@@ -1,0 +1,25 @@
+[package]
+name          = "luv"
+version       = "0.9.0"
+authors       = ["Michal Nazarewicz <mina86@mina86.com>"]
+edition       = "2018"
+description   = """
+Tools for converting between sRGB, CIE Luv and CIE LCh(uv) colour
+spaces and comparing differences in colour.
+"""
+repository    = "https://github.com/mina86/luv"
+documentation = "https://docs.rs/luv"
+readme        = "README.md"
+keywords      = ["luv", "lch", "color", "pixel", "rgb"]
+categories    = ["graphics", "multimedia::images", "multimedia::video"]
+license       = "MIT"
+
+[lib]
+bench = false
+
+[dependencies]
+srgb = "0.1.4"
+
+[dev-dependencies]
+approx = "0.3"
+rand = "0.8.3"
