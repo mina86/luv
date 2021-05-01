@@ -79,16 +79,45 @@ mod approx_impl;
 /// Struct representing a color in CIALuv, a.k.a. L\*u\*v\*, color space
 #[derive(Debug, PartialEq, Copy, Clone, Default)]
 pub struct Luv {
+    /// The L\* value (achromatic luminance) of the colour in 0–100 range.
     pub l: f32,
+    /// The u\* value of the colour.
+    ///
+    /// Together with v\* value, it defines chromacity of the colour.  The u\*
+    /// coordinate represents colour’s position on red-green axis with negative
+    /// values indicating more red and positive more green colour.  Typical
+    /// values are in -100–100 range (but exact range for ‘valid’ colours
+    /// depends on luminance and v\* value).
     pub u: f32,
+    /// The u\* value of the colour.
+    ///
+    /// Together with u\* value, it defines chromacity of the colour.  The v\*
+    /// coordinate represents colour’s position on blue-yellow axis with
+    /// negative values indicating more blue and positive more yellow colour.
+    /// Typical values are in -100–100 range (but exact range for ‘valid’
+    /// colours depends on luminance and u\* value).
     pub v: f32,
 }
 
 /// Struct representing a color in cylindrical CIELCh(uv) color space
 #[derive(Debug, PartialEq, Copy, Clone, Default)]
 pub struct LCh {
+    /// The L\* value (achromatic luminance) of the colour in 0–100 range.
+    ///
+    /// This is the same value as in the [`Luv`] object.
     pub l: f32,
+    /// The C\*_uv value (chroma) of the colour.
+    ///
+    /// Together with h_uv, it defines chromacity of the colour.  The typical
+    /// values of the coordinate go from zero up to around 150 (but exact range
+    /// for ‘valid’ colours depends on luminance and hue).  Zero represents
+    /// shade of grey.
     pub c: f32,
+    /// The h_uv value (hue) of the colour measured in radians.
+    ///
+    /// Together with C\*_uv, it defines chromacity of the colour.  The value
+    /// represents an angle thus it wraps around τ.  Typically, the value will
+    /// be in the -π–π range.  The value is undefined if C\*_uv is zero.
     pub h: f32,
 }
 
