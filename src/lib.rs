@@ -77,7 +77,7 @@
 mod approx_impl;
 
 /// Struct representing a color in CIALuv, a.k.a. L\*u\*v\*, color space
-#[derive(Debug, PartialEq, Copy, Clone, Default)]
+#[derive(Debug, Copy, Clone, Default)]
 pub struct Luv {
     /// The L\* value (achromatic luminance) of the colour in 0–100 range.
     pub l: f32,
@@ -100,7 +100,7 @@ pub struct Luv {
 }
 
 /// Struct representing a color in cylindrical CIELCh(uv) color space
-#[derive(Debug, PartialEq, Copy, Clone, Default)]
+#[derive(Debug, Copy, Clone, Default)]
 pub struct LCh {
     /// The L\* value (achromatic luminance) of the colour in 0–100 range.
     ///
@@ -430,6 +430,40 @@ impl LCh {
     }
 }
 
+
+impl std::cmp::PartialEq<Luv> for Luv {
+    /// Compares two colours ignoring chromacity if L\* is zero.
+    fn eq(&self, other: &Self) -> bool {
+        if self.l != other.l {
+            false
+        } else if self.l == 0.0 {
+            true
+        } else {
+            self.u == other.u && self.v == other.v
+        }
+    }
+}
+
+impl std::cmp::PartialEq<LCh> for LCh {
+    /// Compares two colours ignoring chromacity if L\* is zero and hue if C\*
+    /// is zero.  Hues which are τ apart are compared equal.
+    fn eq(&self, other: &Self) -> bool {
+        if self.l != other.l {
+            false
+        } else if self.l == 0.0 {
+            true
+        } else if self.c != other.c {
+            false
+        } else if self.c == 0.0 {
+            true
+        } else {
+            use std::f32::consts::TAU;
+            self.h.rem_euclid(TAU) == other.h.rem_euclid(TAU)
+        }
+    }
+}
+
+
 #[cfg(test)]
 mod tests {
     use super::{LCh, Luv};
@@ -684,5 +718,45 @@ mod tests {
             }
         }
         assert_eq!(5.857145879417658, error * 1e9);
+    }
+
+    #[test]
+    #[rustfmt::skip]
+    fn test_partial_eq() {
+        use std::f32::consts::TAU;
+
+        // Chromacity doesn’t matter if L* is zero.
+        assert_eq!(Luv { l: 0.0, u: 0.0, v: 0.0 },
+                   Luv { l: 0.0, u: 1.0, v: 0.0 });
+        assert_eq!(Luv { l: 0.0, u: 0.0, v: 0.0 },
+                   Luv { l: 0.0, u: 0.0, v: 1.0 });
+        assert_eq!(LCh { l: 0.0, c: 0.0, h: 0.0 },
+                   LCh { l: 0.0, c: 1.0, h: 0.0 });
+        assert_eq!(LCh { l: 0.0, c: 0.0, h: 0.0 },
+                   LCh { l: 0.0, c: 0.0, h: 1.0 });
+
+        // Hue doesn’t matter if C* is zero.
+        assert_eq!(LCh { l: 100.0, c: 0.0, h: 0.0 },
+                   LCh { l: 100.0, c: 0.0, h: 1.0 });
+
+        // Hues which are τ apart are eqaul.
+        assert_eq!(LCh { l: 75.0, c: 50.0, h: 1.0 },
+                   LCh { l: 75.0, c: 50.0, h: 1.0 + 2.0 * TAU });
+        assert_eq!(LCh { l: 75.0, c: 50.0, h: 1.0 },
+                   LCh { l: 75.0, c: 50.0, h: 1.0 - TAU });
+
+        // And a few non-equal test cases.
+        assert_ne!(Luv { l: 25.0, u: 100.0, v: 75.0 },
+                   Luv { l: 50.0, u: 100.0, v: 75.0 });
+        assert_ne!(Luv { l: 50.0, u: 100.0, v: 75.0 },
+                   Luv { l: 50.0, u:  50.0, v: 75.0 });
+        assert_ne!(Luv { l: 50.0, u: 100.0, v: 75.0 },
+                   Luv { l: 50.0, u: 100.0, v: 25.0 });
+        assert_ne!(LCh { l: 50.0, c: 100.0, h: 1.0 },
+                   LCh { l: 25.0, c: 100.0, h: 1.0 });
+        assert_ne!(LCh { l: 50.0, c: 100.0, h: 1.0 },
+                   LCh { l: 50.0, c:  50.0, h: 1.0 });
+        assert_ne!(LCh { l: 50.0, c: 100.0, h: 1.0 },
+                   LCh { l: 50.0, c: 100.0, h: 2.0 });
     }
 }
