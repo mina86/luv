@@ -128,7 +128,7 @@ pub struct LCh {
 }
 
 
-// κ and ε parameters used in conversion between XYZ and La*b*.  See
+// κ and ε parameters used in conversion between XYZ and L*u*v*.  See
 // http://www.brucelindbloom.com/LContinuity.html for explanation as to why
 // those are different values than those provided by CIE standard.
 const KAPPA: f32 = 24389.0 / 27.0;
