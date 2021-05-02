@@ -130,8 +130,11 @@ const ONE_OVER_KAPPA: f32 = 27.0 / 24389.0;
 const EPSILON: f32 = 216.0 / 24389.0;
 const KAPPA_EPSILON: f32 = /* κ * ε = 216 / 27 = 8 */ 8.0;
 
-const WHITE_U_PRIME: f32 = srgb::xyz::D65_uv[0];
-const WHITE_V_PRIME: f32 = srgb::xyz::D65_uv[1];
+use srgb::xyz::D65_XYZ;
+const WHITE_U_PRIME: f32 =
+    4.0 * D65_XYZ[0] / (D65_XYZ[0] + 15.0 * D65_XYZ[1] + 3.0 * D65_XYZ[2]);
+const WHITE_V_PRIME: f32 =
+    9.0 * D65_XYZ[1] / (D65_XYZ[0] + 15.0 * D65_XYZ[1] + 3.0 * D65_XYZ[2]);
 
 fn luv_from_xyz(xyz: [f32; 3]) -> Luv {
     let [x, y, z] = xyz;
