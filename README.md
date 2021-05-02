@@ -64,6 +64,13 @@ let rgbs = vec![
 let luvs = rgb_bytes_to_luvs(&rgbs);
 ```
 
+# Features
+
+The crate defines an `approx` feature.  If enabled, approximate
+equality as defined by [`approx`
+crate](https://crates.io/crates/approx) will be implemented for the
+`Luv` and `LCh` types.
+
 # Other crates
 
 The design — and to some degree code — of this crate has been based on the

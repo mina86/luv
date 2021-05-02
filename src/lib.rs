@@ -64,6 +64,12 @@
 //! let luvs = rgb_bytes_to_luvs(&rgbs);
 //! ```
 //!
+//! # Features
+//!
+//! The crate defines an `approx` feature.  If enabled, approximate equality as
+//! defined by [`approx` crate](https://crates.io/crates/approx) will be
+//! implemented for the `Luv` and `LCh` types.
+//!
 //! # Other crates
 //!
 //! The design — and to some degree code — of this crate has been based on the
@@ -73,7 +79,7 @@
 //! For conversion between sRGB and XYZ colour spaces this crate relies on the
 //! [`srgb` crate](https://crates.io/crates/srgb).
 
-#[cfg(test)]
+#[cfg(any(test, feature = "approx"))]
 mod approx_impl;
 
 /// Struct representing a color in CIALuv, a.k.a. L\*u\*v\*, color space
@@ -564,10 +570,10 @@ mod tests {
 
     fn run_test_approx<T, U>(want: &[T], f: impl Fn(&U) -> T, input: &[U])
     where
-        T: PartialEq + std::fmt::Debug + approx::RelativeEq,
-        <T as approx::AbsDiffEq>::Epsilon: Clone, {
+        T: PartialEq + std::fmt::Debug + approx::RelativeEq<Epsilon = f32>,
+    {
         let actual: Vec<_> = input.iter().map(f).collect();
-        approx::assert_abs_diff_eq!(want, &actual[..]);
+        approx::assert_abs_diff_eq!(want, &actual[..], epsilon = 0.0001);
     }
 
     #[test]
