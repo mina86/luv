@@ -142,6 +142,18 @@ const WHITE_U_PRIME: f32 =
 const WHITE_V_PRIME: f32 =
     9.0 * D65_XYZ[1] / (D65_XYZ[0] + 15.0 * D65_XYZ[1] + 3.0 * D65_XYZ[2]);
 
+
+#[cfg(any(target_feature = "fma", test))]
+fn mul_add(multiplier: f32, multiplicand: f32, addend: f32) -> f32 {
+    multiplier.mul_add(multiplicand, addend)
+}
+
+#[cfg(not(any(target_feature = "fma", test)))]
+fn mul_add(multiplier: f32, multiplicand: f32, addend: f32) -> f32 {
+    multiplier * multiplicand + addend
+}
+
+
 fn luv_from_xyz(xyz: [f32; 3]) -> Luv {
     let [x, y, z] = xyz;
 
@@ -150,13 +162,13 @@ fn luv_from_xyz(xyz: [f32; 3]) -> Luv {
     } else if y <= EPSILON {
         KAPPA * y
     } else {
-        y.powf(1.0 / 3.0).mul_add(116.0, -16.0)
+        mul_add(y.powf(1.0 / 3.0), 116.0, -16.0)
     };
 
-    let d = y.mul_add(15.0, z.mul_add(3.0, x));
+    let d = mul_add(y, 15.0, mul_add(z, 3.0, x));
     let ll = 13.0 * l;
-    let u = ll * (x / d).mul_add(4.0, -WHITE_U_PRIME);
-    let v = ll * (y / d).mul_add(9.0, -WHITE_V_PRIME);
+    let u = ll * mul_add(x / d, 4.0, -WHITE_U_PRIME);
+    let v = ll * mul_add(y / d, 9.0, -WHITE_V_PRIME);
 
     Luv { l, u, v }
 }
@@ -190,9 +202,9 @@ fn xyz_from_luv(luv: &Luv) -> [f32; 3] {
 /// let rgbs = &[[255u8, 0, 0], [255, 0, 255], [0, 255, 255]];
 /// let luvs = luv::rgbs_to_luvs(rgbs);
 /// assert_eq!(vec![
-///     luv::Luv { l: 53.238235, u: 175.01141, v: 37.758636 },
-///     luv::Luv { l: 60.32269, u: 84.06383, v: -108.690346 },
-///     luv::Luv { l: 91.11428, u: -70.46933, v: -15.2037325 },
+///     luv::Luv { l: 53.238235, u: 175.01141, v: 37.75865 },
+///     luv::Luv { l: 60.322693, u: 84.063835, v: -108.69035 },
+///     luv::Luv { l: 91.11428, u: -70.46933, v: -15.203715 },
 /// ], luvs);
 /// ```
 #[inline]
@@ -208,9 +220,9 @@ pub fn rgbs_to_luvs(rgbs: &[[u8; 3]]) -> Vec<Luv> {
 /// let rgbs = &[255u8, 0, 0, 255, 0, 255, 0, 255, 255];
 /// let luvs = luv::rgb_bytes_to_luvs(rgbs);
 /// assert_eq!(vec![
-///     luv::Luv { l: 53.238235, u: 175.01141, v: 37.758636 },
-///     luv::Luv { l: 60.32269, u: 84.06383, v: -108.690346 },
-///     luv::Luv { l: 91.11428, u: -70.46933, v: -15.2037325 },
+///     luv::Luv { l: 53.238235, u: 175.01141, v: 37.75865 },
+///     luv::Luv { l: 60.322693, u: 84.063835, v: -108.69035 },
+///     luv::Luv { l: 91.11428, u: -70.46933, v: -15.203715 },
 /// ], luvs);
 /// ```
 pub fn rgb_bytes_to_luvs(bytes: &[u8]) -> Vec<Luv> {
@@ -274,7 +286,7 @@ impl Luv {
     ///
     /// ```
     /// let luv = luv::Luv::from_rgb(&[240, 33, 95]);
-    /// assert_eq!(luv::Luv { l: 52.334686, u: 138.98636, v: 7.8476834 }, luv);
+    /// assert_eq!(luv::Luv { l: 52.334686, u: 138.98636, v: 7.8476787 }, luv);
     /// ```
     pub fn from_rgb(rgb: &[u8; 3]) -> Self {
         luv_from_xyz(srgb::xyz_from_u8(*rgb))
@@ -295,7 +307,7 @@ impl Luv {
     ///
     /// ```
     /// let luv = luv::Luv::from_rgba(&[240, 33, 95, 255]);
-    /// assert_eq!(luv::Luv { l: 52.334686, u: 138.98636, v: 7.8476834 }, luv);
+    /// assert_eq!(luv::Luv { l: 52.334686, u: 138.98636, v: 7.8476787 }, luv);
     /// ```
     pub fn from_rgba(rgba: &[u8; 4]) -> Self { Luv::from_rgb(subarray(rgba)) }
 
@@ -345,7 +357,7 @@ impl LCh {
     /// ```
     /// let rgb = [240, 33, 95];
     /// let lch = luv::LCh::from_rgb(&rgb);
-    /// assert_eq!(luv::LCh {l: 52.334686, c: 139.20773, h: 0.056403805}, lch);
+    /// assert_eq!(luv::LCh { l: 52.334686, c: 139.20773, h: 0.05640377 }, lch);
     /// assert_eq!(lch, luv::LCh::from_luv(luv::Luv::from_rgb(&rgb)));
     /// ```
     pub fn from_rgb(rgb: &[u8; 3]) -> Self {
@@ -363,7 +375,7 @@ impl LCh {
     /// ```
     /// let rgba = [240, 33, 95, 255];
     /// let lch = luv::LCh::from_rgba(&rgba);
-    /// assert_eq!(luv::LCh {l: 52.334686, c: 139.20773, h: 0.056403805}, lch);
+    /// assert_eq!(luv::LCh { l: 52.334686, c: 139.20773, h: 0.05640377 }, lch);
     /// assert_eq!(lch, luv::LCh::from_luv(luv::Luv::from_rgba(&rgba)));
     /// ```
     pub fn from_rgba(rgba: &[u8; 4]) -> Self {

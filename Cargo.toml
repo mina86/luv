@@ -1,6 +1,6 @@
 [package]
 name          = "luv"
-version       = "0.9.0"
+version       = "0.9.1"
 authors       = ["Michal Nazarewicz <mina86@mina86.com>"]
 edition       = "2018"
 description   = """
