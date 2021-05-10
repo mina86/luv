@@ -18,7 +18,7 @@ license       = "MIT"
 bench = false
 
 [dependencies]
-srgb = "0.1.4"
+srgb = "0.2"
 approx = { version = "0.4", optional = true }
 
 [dev-dependencies]
