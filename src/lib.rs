@@ -383,7 +383,7 @@ impl LCh {
     /// assert_eq!(lch, luv::LCh::from_luv(luv::Luv::from_rgb(&rgb)));
     /// ```
     pub fn from_rgb(rgb: &[u8; 3]) -> Self {
-        LCh::from_luv(Luv::from_rgb(&rgb))
+        LCh::from_luv(Luv::from_rgb(rgb))
     }
 
     /// Constructs a new `LCh` from a four-element array of `u8`s
@@ -401,7 +401,7 @@ impl LCh {
     /// assert_eq!(lch, luv::LCh::from_luv(luv::Luv::from_rgba(&rgba)));
     /// ```
     pub fn from_rgba(rgba: &[u8; 4]) -> Self {
-        LCh::from_luv(Luv::from_rgba(&rgba))
+        LCh::from_luv(Luv::from_rgba(rgba))
     }
 
     /// Constructs a new `LCh` from a `Luv`
